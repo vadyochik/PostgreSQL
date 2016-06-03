@@ -44,11 +44,11 @@
 # That's why we're using ansible_distribution/ansible_distribution_version variables.
 - name: Initialise Postgresql Database if it is not
   command: service postgresql{{ join_char | default("-")}}{{ postgresql_version }} initdb
-  when: data_dir.stat.exists == false and (ansible_distribution_major_version == '6' or (ansible_distribution == 'Amazon' and ansible_distribution_version == '2015.03'))
+  when: not data_dir.stat.exists and (ansible_distribution_major_version|version_compare('6', '=') or ansible_distribution == 'Amazon')
 
 - name: Initialise Postgresql Database on Centos/Rhel 7 if it is not
   command: /usr/pgsql-{{ postgresql_version }}/bin/postgresql{{ postgresql_version|replace('.','') }}-setup initdb
-  when: data_dir.stat.exists == false and ansible_distribution_major_version == '7'
+  when: not data_dir.stat.exists and ansible_distribution_major_version|version_compare('7', '=')
 
 - name: create pid file
   file: path=/var/run/{{postgresql_version}}-{{postgresql_cluster_name}}.pid state=touch mode=0644 owner=postgres group=postgres
