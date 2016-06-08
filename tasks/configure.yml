@@ -11,6 +11,9 @@
   file: state=directory dest="{{postgresql_log_directory}}" owner="{{postgresql_admin_user}}" group="{{postgresql_admin_user}}"
   when: 'postgresql_log_directory.startswith("/")'
 
+- name: Config | Ensure the pid directory exists
+  file: name="{{ postgresql_pid_directory }}" state=directory owner="{{postgresql_admin_user}}" group="{{postgresql_admin_user}}" mode=0755
+
 - name: Install service file on Centos/Rhel 7
   template: src="postgresql.service.j2" dest="/etc/systemd/system/postgresql{{ join_char | default("-")}}{{ postgresql_version }}.service"
   when: ansible_distribution_major_version == '7'
@@ -49,9 +52,6 @@
 - name: Initialise Postgresql Database on Centos/Rhel 7 if it is not
   command: /usr/pgsql-{{ postgresql_version }}/bin/postgresql{{ postgresql_version|replace('.','') }}-setup initdb
   when: not data_dir.stat.exists and ansible_distribution_major_version|version_compare('7', '=')
-
-- name: create pid file
-  file: path=/var/run/{{postgresql_version}}-{{postgresql_cluster_name}}.pid state=touch mode=0644 owner=postgres group=postgres
 
 - name: Configure | Update configuration - (pg_hba.conf)
   template:
